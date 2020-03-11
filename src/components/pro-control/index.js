@@ -17,7 +17,7 @@ import { i18n } from 'stackable'
 const LABELS = {
 	layout: {
 		title: __( 'Say Hello to More Layouts 👋', i18n ),
-		description: __( 'Get more layouts for this block. This feature is only available on Stackable Premium.', i18n ),
+		description: __( 'Get more layouts for your blocks. Find out more about what\'s available in Stackable Premium.', i18n ),
 		button: __( 'Learn More', i18n ),
 	},
 	design: {
@@ -52,6 +52,7 @@ const ProControl = props => {
 		<div className="ugb-design-control-pro-note">
 			<SVGProIcon />
 			<h4>{ props.title || LABELS[ props.type ].title }</h4>
+			{ props.children }
 			<p>{ props.description || LABELS[ props.type ].description }</p>
 			{ props.showButton && <ProModal button={ props.button || LABELS[ props.type ].button } /> }
 		</div>

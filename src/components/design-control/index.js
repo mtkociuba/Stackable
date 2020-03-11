@@ -14,12 +14,8 @@ import classnames from 'classnames'
 import { RadioControl } from '@wordpress/components'
 
 function DesignControl( props ) {
-	const {
-		selected, options, onChange, className = '',
-	} = props
-
 	// Convert the options.
-	const fixedOptions = options.map( option => {
+	const fixedOptions = props.options.map( option => {
 		return {
 			...option,
 			label: <DesignPanelItem imageFile={ option.image } imageHoverFile={ option.hoverImage } imageWidth={ option.imageWidth } imageHeight={ option.imageHeight } isPro={ option.isPro } label={ option.label } />,
@@ -28,18 +24,33 @@ function DesignControl( props ) {
 		}
 	} )
 
+	const classNames = classnames( [
+		props.className,
+		'ugb-design-control-wrapper components-base-control',
+	], {
+		'ugb-design-control__disabled': props.disabled,
+	} )
+
 	return (
-		<div className={ classnames( className, 'ugb-design-control-wrapper components-base-control' ) }>
+		<div className={ classNames }>
 			<div className="components-base-control__label">{ props.label }</div>
 			<RadioControl
 				{ ...omit( props, [ 'label' ] ) }
 				className="ugb-design-control"
-				selected={ selected }
+				selected={ props.selected }
 				options={ fixedOptions }
-				onChange={ onChange }
+				onChange={ props.onChange }
 			/>
 		</div>
 	)
+}
+
+DesignControl.defaultProps = {
+	className: '',
+	selected: '',
+	options: [],
+	onChange: () => {},
+	disabled: false,
 }
 
 export default DesignControl

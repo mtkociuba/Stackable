@@ -40,3 +40,23 @@
 		}
 	}
 }
+
+.ugb-design-control__disabled {
+	.ugb-design-control {
+		.ugb-design-panel-item:hover {
+			box-shadow: none;
+		}
+	}
+}
+
+// Smaller design control if inside a Pro Control.
+.ugb-pro-control-button__wrapper {
+	.ugb-design-control {
+		pointer-events: none;
+		font-size: 0.8em;
+		opacity: 0.8;
+		label > span {
+			padding: 0;
+		}
+	}
+}

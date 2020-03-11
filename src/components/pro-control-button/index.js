@@ -27,6 +27,7 @@ class ProControlButton extends Component {
 			'ugb-pro-control-button__wrapper',
 		], {
 			'ugb-pro-control-button--hidden': ! this.state.isOpen,
+			'ugb-pro-control-button--has-children': this.props.children,
 		} )
 
 		return (
@@ -43,7 +44,9 @@ class ProControlButton extends Component {
 						description={ this.props.description }
 						button={ this.props.button }
 						showButton={ this.props.showButton }
-					/>
+					>
+						{ this.props.children }
+					</ProControl>
 				</div>
 			</div>
 		)

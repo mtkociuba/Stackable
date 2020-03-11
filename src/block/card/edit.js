@@ -22,6 +22,7 @@ import {
 	ImageBackgroundControlsHelper,
 	WhenResponsiveScreen,
 	DivBackground,
+	DesignControl,
 } from '~stackable/components'
 import {
 	descriptionPlaceholder,
@@ -88,7 +89,30 @@ addFilter( 'stackable.card.edit.inspector.layout.before', 'stackable/card', ( ou
 				] ) }
 				onChange={ design => setAttributes( { design } ) }
 			>
-				{ showProNotice && <ProControlButton /> }
+				{ showProNotice &&
+					<ProControlButton>
+						<DesignControl
+							options={ applyFilters( 'stackable.card.edit.layouts', [
+								{
+									label: __( 'Basic', i18n ), value: 'basic', image: ImageDesignBasic,
+								},
+								{
+									label: __( 'Plain', i18n ), value: 'plain', image: ImageDesignPlain,
+								},
+								{
+									label: __( 'Basic', i18n ), value: 'basic', image: ImageDesignBasic,
+								},
+								{
+									label: __( 'Plain', i18n ), value: 'plain', image: ImageDesignPlain,
+								},
+								{
+									label: __( 'Plain', i18n ), value: 'plain', image: ImageDesignPlain,
+								},
+							] ) }
+							disabled={ true }
+						/>
+					</ProControlButton>
+				}
 			</DesignPanelBody>
 		</Fragment>
 	)
