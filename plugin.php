@@ -22,6 +22,15 @@ if ( function_exists( 'sugb_fs' ) ) {
 	return;
 }
 
+
+defined( 'STACKABLE_SHOW_PRO_NOTICES' ) || define( 'STACKABLE_SHOW_PRO_NOTICES', true );
+defined( 'STACKABLE_VERSION' ) || define( 'STACKABLE_VERSION', '2.8.0' );
+defined( 'STACKABLE_FILE' ) || define( 'STACKABLE_FILE', __FILE__ );
+defined( 'STACKABLE_I18N' ) || define( 'STACKABLE_I18N', 'stackable-ultimate-gutenberg-blocks' ); // Plugin slug.
+defined( 'STACKABLE_CLOUDFRONT_URL' ) || define( 'STACKABLE_CLOUDFRONT_URL', 'https://d3gt1urn7320t9.cloudfront.net' ); // CloudFront CDN URL
+require_once( plugin_dir_path( __FILE__ ) . 'src/init-block-accordion.php' );
+return;
+
 defined( 'STACKABLE_SHOW_PRO_NOTICES' ) || define( 'STACKABLE_SHOW_PRO_NOTICES', true );
 defined( 'STACKABLE_VERSION' ) || define( 'STACKABLE_VERSION', '2.8.0' );
 defined( 'STACKABLE_FILE' ) || define( 'STACKABLE_FILE', __FILE__ );

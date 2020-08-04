@@ -3,6 +3,7 @@
  *
  * IMPORTANT: DO NOT CALL GULP DIRECTLY. Use `npm run start` or `npm run build` instead.
  */
+require( './gulpfile-block-directory' )
 
 const autoprefixer = require( 'autoprefixer' ),
 	concat = require( 'gulp-concat' ),

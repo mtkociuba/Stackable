@@ -134,7 +134,7 @@ const schema = {
 export const name = 'ugb/accordion'
 
 export const settings = {
-	title: __( 'Accordion', i18n ),
+	title: __( 'Accordion by Stackable', i18n ),
 	description: __( 'A title that your visitors can toggle to view more text. Use as FAQs or multiple ones for an Accordion.', i18n ),
 	icon: AccordionIcon,
 	category: 'common',

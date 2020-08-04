@@ -21,7 +21,6 @@ if ( ! function_exists( 'stackable_block_assets' ) ) {
 	* @since 0.1
 	*/
 	function stackable_block_assets() {
-
 		$enqueue_styles_in_frontend = apply_filters( 'stackable_enqueue_styles', ! is_admin() );
 		$enqueue_scripts_in_frontend = apply_filters( 'stackable_enqueue_scripts', ! is_admin() );
 
@@ -82,7 +81,7 @@ if ( ! function_exists( 'stackable_block_editor_assets' ) ) {
 		$dependencies = array( 'ugb-block-js-vendor', 'code-editor', 'wp-blocks', 'wp-element', 'wp-components', 'wp-editor', 'wp-util', 'wp-plugins', 'wp-edit-post', 'wp-i18n', 'wp-api' );
 		wp_enqueue_script(
 			'ugb-block-js',
-			plugins_url( 'dist/editor_blocks.js', STACKABLE_FILE ),
+			plugins_url( 'dist/editor_blocks-accordion.js', STACKABLE_FILE ),
 			// wp-util for wp.ajax.
 			// wp-plugins & wp-edit-post for Gutenberg plugins.
 			apply_filters( 'stackable_editor_blocks_dependencies', $dependencies ),
@@ -105,7 +104,7 @@ if ( ! function_exists( 'stackable_block_editor_assets' ) ) {
 			'srcUrl' => untrailingslashit( plugins_url( '/', STACKABLE_FILE ) ),
 			'contentWidth' => isset( $content_width ) ? $content_width : 900,
 			'i18n' => STACKABLE_I18N,
-			'disabledBlocks' => stackable_get_disabled_blocks(),
+			'disabledBlocks' => function_exists( 'stackable_get_disabled_blocks' ) ? stackable_get_disabled_blocks() : [],
 			'nonce' => wp_create_nonce( 'stackable' ),
 			'devMode' => defined( 'WP_ENV' ) ? WP_ENV === 'development' : false,
 			'cdnUrl' => STACKABLE_CLOUDFRONT_URL,
@@ -118,11 +117,12 @@ if ( ! function_exists( 'stackable_block_editor_assets' ) ) {
 			'primaryColor' => get_theme_mod( 's_primary_color', '#2091e1' ),
 
 			// Premium related variables.
-			'isPro' => sugb_fs()->can_use_premium_code(),
-			'showProNotice' => stackable_should_show_pro_notices(),
-			'pricingURL' => sugb_fs()->get_upgrade_url(),
-			'planName' => sugb_fs()->is_plan( 'starter', true ) ? 'starter' :
-						  ( sugb_fs()->is_plan( 'professional', true ) ? 'professional' : 'business' ),
+			'isPro' => function_exists( 'sugb_fs' ) ? sugb_fs()->can_use_premium_code() : false,
+			'showProNotice' => function_exists( 'stackable_should_show_pro_notices' ) ? stackable_should_show_pro_notices() : false,
+			'pricingURL' => function_exists( 'sugb_fs' ) ? sugb_fs()->get_upgrade_url() : '',
+			'planName' => ! function_exists( 'sugb_fs' ) ? '' :
+				( sugb_fs()->is_plan( 'starter', true ) ? 'starter' :
+					( sugb_fs()->is_plan( 'professional', true ) ? 'professional' : 'business' ) ),
 
 			// Icons.
 			'fontAwesomeSearchProIcons' => apply_filters( 'stackable_search_fontawesome_pro_icons', false ),
