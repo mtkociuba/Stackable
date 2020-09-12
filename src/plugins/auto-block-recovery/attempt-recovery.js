@@ -91,7 +91,10 @@ const reusableBlocksToCheck = []
 let reusableBlockInterval
 const addAutoRecoverReusableBlock = block => {
 	if ( block.attributes.ref ) {
-		reusableBlocksToCheck.push( { clientId: block.clientId, ref: block.attributes.ref } )
+		reusableBlocksToCheck.push( {
+			clientId: block.clientId,
+			ref: block.attributes.ref,
+		} )
 	}
 }
 
@@ -108,9 +111,15 @@ const recoverReusableBlocks = () => {
 			return
 		}
 
-		reusableBlocksToCheck.every( ( { clientId, ref } ) => {
-			recoverReusableBlock( ref )
-			console.log( 'recovering reusable', clientId, ref )
+		reusableBlocksToCheck.forEach( ( { clientId, ref } ) => {
+			const wasRecovered = recoverReusableBlock( ref )
+			if ( wasRecovered ) {
+				wp.data.dispatch( 'core/block-editor' ).replaceBlocks(
+					clientId,
+					wp.blocks.createBlock( 'core/block', { ref } )
+				)
+				console.log( 'Stackable notice: reusable block (' + ref + ' ' + clientId + ') was auto-recovered, you should not see this after refreshing your page.' ) // eslint-disable-line no-console
+			}
 		} )
 
 		clearInterval( reusableBlockInterval )
@@ -124,8 +133,29 @@ export const recoverReusableBlock = ref => {
 	// const ref = block.attributes.ref
 	const b = getReusableBlock( ref )
 	// console.log( 'all', isFetchingReusableBlock( ref ) )
-	console.log( 'get', b )
 	const blocks = wp.blocks.parse( b.content ) // this will result in an error
-	console.log( blocks )
-	// const block = blocks[ 0 ]
+
+	const newBlocks = recoverBlocks( blocks )
+
+	// Replace the recovered blocks with the new ones.
+	const wasRecovered = newBlocks.some( block => {
+		return block.recovered && block.replacedClientId
+	} )
+
+	if ( wasRecovered ) {
+		// Update the reusable block
+		const { __experimentalUpdateReusableBlock: updateReusableBlock } = wp.data.dispatch( 'core/editor' )
+		updateReusableBlock(
+			ref,
+			{
+				content: wp.blocks.serialize( newBlocks ),
+			}
+		)
+
+		// Save the changes.
+		const { __experimentalSaveReusableBlock: saveReusableBlock } = wp.data.dispatch( 'core/editor' )
+		saveReusableBlock( ref )
+	}
+
+	return wasRecovered
 }
