@@ -1,7 +1,7 @@
 import {
 	select, dispatch,
 } from '@wordpress/data'
-import { createBlock } from '@wordpress/blocks'
+import { createBlock, isReusableBlock } from '@wordpress/blocks'
 import { isInvalid } from './is-invalid'
 
 // Add some styles to hide the flash of errored blocks.
@@ -30,14 +30,19 @@ export const autoAttemptRecovery = () => {
 	// Editor might not be ready yet with the contents or might not have
 	// initialized yet.
 	setTimeout( () => {
+		console.log( 'isready', wp.data.select( 'core/editor' ).__unstableIsEditorReady() )
 		// Recover all the blocks that we can find.
 		const mainBlocks = recoverBlocks( select( 'core/editor' ).getEditorBlocks() )
+
+		recoverReusableBlocks()
+
 		// Replace the recovered blocks with the new ones.
 		mainBlocks.forEach( block => {
 			if ( block.recovered && block.replacedClientId ) {
 				dispatch( 'core/block-editor' ).replaceBlock( block.replacedClientId, block )
 			}
 		} )
+
 		enableBlockWarnings()
 	}, 0 )
 }
@@ -59,6 +64,10 @@ export const recoverBlocks = blocks => {
 			}
 		}
 
+		if ( isReusableBlock( block ) ) {
+			addAutoRecoverReusableBlock( block )
+		}
+
 		if ( isInvalid( block ) ) {
 			const newBlock = recoverBlock( block )
 			newBlock.replacedClientId = block.clientId
@@ -76,4 +85,47 @@ export const recoverBlock = ( {
 	name, attributes, innerBlocks,
 } ) => {
 	return createBlock( name, attributes, innerBlocks )
+}
+
+const reusableBlocksToCheck = []
+let reusableBlockInterval
+const addAutoRecoverReusableBlock = block => {
+	if ( block.attributes.ref ) {
+		reusableBlocksToCheck.push( { clientId: block.clientId, ref: block.attributes.ref } )
+	}
+}
+
+const recoverReusableBlocks = () => {
+	reusableBlockInterval = setInterval( () => {
+		const done = reusableBlocksToCheck.every( ( { ref } ) => {
+			const { __experimentalIsFetchingReusableBlock: isFetchingReusableBlock } = wp.data.select( 'core/editor' )
+			if ( isFetchingReusableBlock( ref ) ) {
+				return false
+			}
+			return true
+		} )
+		if ( ! done ) {
+			return
+		}
+
+		reusableBlocksToCheck.every( ( { clientId, ref } ) => {
+			recoverReusableBlock( ref )
+			console.log( 'recovering reusable', clientId, ref )
+		} )
+
+		clearInterval( reusableBlockInterval )
+	}, 300 )
+}
+
+export const recoverReusableBlock = ref => {
+	const { __experimentalGetReusableBlock: getReusableBlock } = wp.data.select( 'core/editor' )
+	// const { __experimentalGetReusableBlocks: getReusableBlocks } = wp.data.select( 'core/editor' )
+	// const { __experimentalIsFetchingReusableBlock: isFetchingReusableBlock } = wp.data.select( 'core/editor' )
+	// const ref = block.attributes.ref
+	const b = getReusableBlock( ref )
+	// console.log( 'all', isFetchingReusableBlock( ref ) )
+	console.log( 'get', b )
+	const blocks = wp.blocks.parse( b.content ) // this will result in an error
+	console.log( blocks )
+	// const block = blocks[ 0 ]
 }
