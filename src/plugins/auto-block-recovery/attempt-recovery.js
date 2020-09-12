@@ -1,8 +1,11 @@
 import {
 	select, dispatch,
 } from '@wordpress/data'
-import { createBlock, isReusableBlock } from '@wordpress/blocks'
+import {
+	parse, createBlock, isReusableBlock,
+} from '@wordpress/blocks'
 import { isInvalid } from './is-invalid'
+import reusableBlocksReadyPromise from './reusable-blocks-ready-promise'
 
 // Add some styles to hide the flash of errored blocks.
 const disableBlockWarnings = () => {
@@ -30,7 +33,6 @@ export const autoAttemptRecovery = () => {
 	// Editor might not be ready yet with the contents or might not have
 	// initialized yet.
 	setTimeout( () => {
-		console.log( 'isready', wp.data.select( 'core/editor' ).__unstableIsEditorReady() )
 		// Recover all the blocks that we can find.
 		const mainBlocks = recoverBlocks( select( 'core/editor' ).getEditorBlocks() )
 
@@ -88,7 +90,7 @@ export const recoverBlock = ( {
 }
 
 const reusableBlocksToCheck = []
-let reusableBlockInterval
+
 const addAutoRecoverReusableBlock = block => {
 	if ( block.attributes.ref ) {
 		reusableBlocksToCheck.push( {
@@ -98,62 +100,75 @@ const addAutoRecoverReusableBlock = block => {
 	}
 }
 
+// TODO: doesn't work when the reusable block is inside a block that errored.
+
+/**
+ * Recover all the reusable blocks.
+ */
 const recoverReusableBlocks = () => {
-	reusableBlockInterval = setInterval( () => {
-		const done = reusableBlocksToCheck.every( ( { ref } ) => {
-			const { __experimentalIsFetchingReusableBlock: isFetchingReusableBlock } = wp.data.select( 'core/editor' )
-			if ( isFetchingReusableBlock( ref ) ) {
-				return false
-			}
-			return true
-		} )
-		if ( ! done ) {
-			return
-		}
+	const { replaceBlocks } = dispatch( 'core/block-editor' )
 
-		reusableBlocksToCheck.forEach( ( { clientId, ref } ) => {
-			const wasRecovered = recoverReusableBlock( ref )
-			if ( wasRecovered ) {
-				wp.data.dispatch( 'core/block-editor' ).replaceBlocks(
-					clientId,
-					wp.blocks.createBlock( 'core/block', { ref } )
-				)
-				console.log( 'Stackable notice: reusable block (' + ref + ' ' + clientId + ') was auto-recovered, you should not see this after refreshing your page.' ) // eslint-disable-line no-console
-			}
-		} )
+	reusableBlocksReadyPromise( reusableBlocksToCheck )
+		.then( () => {
+			reusableBlocksToCheck.forEach( ( { clientId, ref } ) => {
+				// Recover the reusable block.
+				const wasRecovered = recoverReusableBlock( ref )
 
-		clearInterval( reusableBlockInterval )
-	}, 300 )
+				// After the reusable block was recovered, we still need to
+				// update the block to see the fixes.
+				if ( wasRecovered ) {
+					replaceBlocks(
+						clientId,
+						createBlock( 'core/block', { ref } )
+					)
+					console.log( 'Stackable notice: reusable block (' + ref + ' ' + clientId + ') was auto-recovered, you should not see this after refreshing your page.' ) // eslint-disable-line no-console
+				}
+			} )
+		} )
 }
 
+/**
+ * Recovers the saved reusable block. This updates the saved block.
+ *
+ * @param {number} ref Reusable block ref Id.
+ */
 export const recoverReusableBlock = ref => {
-	const { __experimentalGetReusableBlock: getReusableBlock } = wp.data.select( 'core/editor' )
-	// const { __experimentalGetReusableBlocks: getReusableBlocks } = wp.data.select( 'core/editor' )
-	// const { __experimentalIsFetchingReusableBlock: isFetchingReusableBlock } = wp.data.select( 'core/editor' )
-	// const ref = block.attributes.ref
-	const b = getReusableBlock( ref )
-	// console.log( 'all', isFetchingReusableBlock( ref ) )
-	const blocks = wp.blocks.parse( b.content ) // this will result in an error
+	const {
+		__experimentalGetReusableBlock: getReusableBlock,
+		__experimentalUpdateReusableBlock: updateReusableBlock,
+		__experimentalSaveReusableBlock: saveReusableBlock,
+	} = dispatch( 'core/editor' )
 
+	// If our functions are not available, don't do anything.
+	if ( ! getReusableBlock || ! updateReusableBlock || ! saveReusableBlock ) {
+		return
+	}
+
+	// Get the raw reusable block.
+	const reusableBlockContent = getReusableBlock( ref )
+
+	// Parse the blocks. This might throw an error but we won't know about it.
+	const blocks = parse( reusableBlockContent.content )
+
+	// Try and recover the blocks.
 	const newBlocks = recoverBlocks( blocks )
 
-	// Replace the recovered blocks with the new ones.
+	// Check whether there was a block that was recovered.
+	// We can catch it here.
 	const wasRecovered = newBlocks.some( block => {
 		return block.recovered && block.replacedClientId
 	} )
 
+	// Save the updated block.
 	if ( wasRecovered ) {
-		// Update the reusable block
-		const { __experimentalUpdateReusableBlock: updateReusableBlock } = wp.data.dispatch( 'core/editor' )
-		updateReusableBlock(
-			ref,
+		// Update the reusable block.
+		updateReusableBlock( ref,
 			{
 				content: wp.blocks.serialize( newBlocks ),
 			}
 		)
 
-		// Save the changes.
-		const { __experimentalSaveReusableBlock: saveReusableBlock } = wp.data.dispatch( 'core/editor' )
+		// Save the changes of the block.
 		saveReusableBlock( ref )
 	}
 
