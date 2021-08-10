@@ -56,9 +56,9 @@ const TYPOGRAPHY_TAGS = [
 		label: __( 'Subtitle', i18n ),
 		selector: '.stk-subtitle',
 		help: (
-			<>
-				{ sprintf( __( "To apply this typography style, just add `%s` in your block\'s Additional CSS classes. Also make sure that `%s` tag is set to avoid conflict with other typography styles", i18n ), 'stk-subtitle', 'p' ) }
-			</> ),
+			<span dangerouslySetInnerHTML={ {
+				__html: sprintf( __( 'This subtitle style is applied to the %sSubtitle Block%s. You can also use this style, by using the CSS class %s in your blocks.', i18n ), '<strong>', '</strong>', '<code>.stk-subtitle</code>' ),
+			} } /> ),
 	},
 	{
 		label: __( 'Body Text', i18n ),

@@ -43,8 +43,10 @@
 	}
 	.dashicons-editor-help {
 		position: absolute;
-		top: 0;
+		top: 50%;
 		right: 0;
+		transform: translateY(-50%);
+		color: #777;
 	}
 }
 .ugb-global-typography-preview__label {
