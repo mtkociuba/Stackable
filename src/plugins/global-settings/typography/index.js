@@ -57,7 +57,7 @@ const TYPOGRAPHY_TAGS = [
 		selector: '.stk-subtitle',
 		help: (
 			<span dangerouslySetInnerHTML={ {
-				__html: sprintf( __( 'This subtitle style is applied to the %sSubtitle Block%s. You can also use this style, by using the CSS class %s in your blocks.', i18n ), '<strong>', '</strong>', '<code>.stk-subtitle</code>' ),
+				__html: sprintf( __( 'This style is for the %sSubtitle Block%s. You can also use this style by using the CSS class %s in your blocks.', i18n ), '<strong>', '</strong>', '<code>stk-subtitle</code>' ),
 			} } /> ),
 	},
 	{
