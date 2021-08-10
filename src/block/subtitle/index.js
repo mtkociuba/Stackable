@@ -4,7 +4,7 @@
 /**
  * External dependencies
  */
-import { TextIcon } from '~stackable/icons'
+import { SubtitleIcon } from '~stackable/icons'
 
 /**
  * Internal dependencies
@@ -16,7 +16,7 @@ import metadata from './block.json'
 
 export const settings = {
 	...metadata,
-	icon: TextIcon,
+	icon: SubtitleIcon,
 	attributes: schema,
 	supports: {
 		anchor: true,
