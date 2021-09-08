@@ -108,7 +108,7 @@
 		"start:test": "npm run build:test && onchange '**/__test__/**/*.js' -- npm run build:test",
 		"start": "npm run clean && concurrently \"npm run start:js\" \"npm run start:css\" \"npm run start:test\"",
 		"package": "gulp package && delete-empty build && gulp generate-indexphp && gulp zip",
-		"build:js": "webpack --config .config/webpack.config.prod.js --silent",
+		"build:js": "webpack --config .config/webpack.config.dev.js --silent",
 		"build:css": "gulp build",
 		"build:test": "node ./tools/generate-deprecated-json.js",
 		"build:dummy-registration": "node ./tools/generate-dummy-register-blocks.js",
